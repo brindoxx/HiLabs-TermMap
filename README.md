@@ -28,7 +28,7 @@ Documentation: [`docs/TermMap_Documentation.pdf`](docs/TermMap_Documentation.pdf
 
 ## Quick start
 
-From a fresh clone, on Windows, macOS or Linux with Python 3.10 or later:
+From a fresh clone, on Windows, macOS or Linux with Python 3.12 or later (tested with Python 3.13.14):
 
 ```bash
 python -m venv .venv
@@ -53,7 +53,7 @@ That one command does everything, with no manual steps:
 3. maps every row of the input file and writes `chunk_id, clinical_entity, icd10cm_code, snomed_code`.
 
 The input needs a `clinical_entity` column (`chunk_id` is carried through; `chunk_text` and `subconcept` are used
-when present). Later runs reuse the cache and start in about a minute. To reproduce the held-out evaluation and its
+when present). Later runs reuse the cache; allow a few minutes for dictionaries, indexes and models to load on CPU. To reproduce the held-out evaluation and its
 error analysis:
 
 ```bash
@@ -237,7 +237,7 @@ and training files are written to `outputs/eval_<name>/`.
 
 ## Setup
 
-Python 3.10 or later.
+Python 3.12 or later (tested with Python 3.13.14).
 
 ```bash
 python -m venv .venv
@@ -297,6 +297,7 @@ the environment and are never written to disk by the code.
 | `TERMMAP_NO_DOWNLOAD` | set to `1` to skip the automatic weight download |
 | `TERMMAP_FORCE_CPU` | set to `1` to keep encoders on CPU when a GPU is present |
 | `TERMMAP_CPU_THREADS` | threads used by encoders on CPU (default 2) |
+| `TERMMAP_EMBED_BATCH_SIZE` | maximum query-encoding batch on CPU (default 32); smaller batches limit padding and memory use for unusually long terms |
 
 ---
 
@@ -328,9 +329,20 @@ python scripts/error_analysis.py outputs/eval_final
 
 ## Demo app
 
-```bash
-streamlit run app.py
+After the first prediction command has built `artifacts/engine.joblib`, launch on Windows with:
+
+```powershell
+.\Start-Demo.ps1
 ```
+
+The launcher uses this project's `.venv` and keeps downloaded encoder models in `.venv/cache/huggingface/`.
+Alternatively, use the environment's Python directly:
+
+```bash
+python -m streamlit run app.py
+```
+
+A local recording sample is available at `outputs/sample_input.csv` after demo preparation.
 
 Maps a term with optional context and entity category, shows the top candidates and confidence for both systems and
 the cross-system check, and maps a whole CSV file with a download of the predictions. The examples above the input
